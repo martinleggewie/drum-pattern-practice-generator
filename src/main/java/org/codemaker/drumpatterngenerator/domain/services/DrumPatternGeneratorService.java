@@ -1,5 +1,6 @@
 package org.codemaker.drumpatterngenerator.domain.services;
 
+import org.codemaker.drumpatterngenerator.domain.entities.Bar;
 import org.codemaker.drumpatterngenerator.domain.entities.DrumPattern;
 import org.codemaker.drumpatterngenerator.domain.valueobjects.TimeSignature;
 
@@ -11,7 +12,11 @@ public class DrumPatternGeneratorService {
   }
 
   public DrumPattern createDrumPattern() {
-    TimeSignature timeSignature = new TimeSignature(4, 4);
-    return new DrumPattern(timeSignature);
+    DrumPattern result = new DrumPattern(numberOfBars, new TimeSignature(4, 4));
+    for (int i = 0; i < numberOfBars; i++) {
+      Bar currentBar = new Bar();
+      result.getBars().add(currentBar);
+    }
+    return result;
   }
 }

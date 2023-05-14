@@ -21,6 +21,8 @@ public class Main {
             .valueSeparator('=').required(true).hasArg(true).build();
     Option numberOfBarsPerLineOption = Option.builder("l").longOpt("numberOfBarsPerLine")
             .desc("number of bars which should appear in one line").valueSeparator('=').required(false).hasArg(true).build();
+    Option titleOption = Option.builder("t").longOpt("title").desc("title to appear at the top of the generated score").valueSeparator('=')
+            .required(false).hasArg(true).build();
     Option outputOption = Option.builder("o").longOpt("output")
             .desc("path and name of the output file which contains the generated Lilypond content.").valueSeparator('=').required(true)
             .hasArg(true).build();
@@ -48,8 +50,8 @@ public class Main {
 
     if (!commandLine.hasOption(numberOfBarsOption.getOpt())) {
       System.err.println(
-              "Option " + numberOfBarsOption.getLongOpt() + " is missing. Without this information there is nothing to do here. " + "Call" +
-                      " \"drumpatternpracticegenerator --help\" for a usage info.");
+              "Option " + numberOfBarsOption.getLongOpt() + " is missing. Without this information there is nothing to do here. " + "Call"
+                      + " \"drumpatternpracticegenerator --help\" for a usage info.");
     }
     if (!commandLine.hasOption(outputOption.getOpt())) {
       System.err.println(
@@ -64,18 +66,23 @@ public class Main {
     if (numberOfBarsPerLine == 0) {
       numberOfBarsPerLine = 4;
     }
+    String title = commandLine.getOptionValue(titleOption.getOpt());
+    if (title == null || title.trim().length() == 0) {
+      title = "My first auto chosen title";
+    }
 
     // 4. Start the real work
     System.out.println();
     System.out.println("Creating the pattern using the following input information:");
     System.out.println("    number of bars in total: " + numberOfBars);
     System.out.println("    number of bars per line: " + numberOfBarsPerLine);
+    System.out.println("    title:                   " + title);
     System.out.println("    output file:             " + outputFilename);
     System.out.println();
 
     DrumPatternGeneratorService drumPatternGeneratorService = new DrumPatternGeneratorService(numberOfBars);
     DrumPattern drumPattern = drumPatternGeneratorService.createDrumPattern();
-    LilypondFileContent lilypondFileContent = new LilypondFileContent(drumPattern, "A title", numberOfBarsPerLine);
+    LilypondFileContent lilypondFileContent = new LilypondFileContent(drumPattern, title, numberOfBarsPerLine);
 
     FileWriter fileWriter = new FileWriter(outputFilename, false);
     fileWriter.write(lilypondFileContent.getContent());
