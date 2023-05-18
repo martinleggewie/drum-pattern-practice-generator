@@ -24,4 +24,13 @@ public class DrumPattern {
   public TimeSignature getTimeSignature() {
     return timeSignature;
   }
+
+  @Override
+  public String toString() {
+    return "DrumPattern{\n" +
+            "    bars=\n" + bars + "," +
+            "\n    numberOfBars=" + numberOfBars + "," +
+            "\n    timeSignature=" + timeSignature +
+            '}';
+  }
 }

@@ -13,10 +13,8 @@ public class TimeSignature {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o)
-      return true;
-    if (o == null || getClass() != o.getClass())
-      return false;
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
     TimeSignature that = (TimeSignature) o;
     return numberOfBeats == that.numberOfBeats && barLength == that.barLength;
   }
@@ -24,5 +22,10 @@ public class TimeSignature {
   @Override
   public int hashCode() {
     return Objects.hash(numberOfBeats, barLength);
+  }
+
+  @Override
+  public String toString() {
+    return "TimeSignature{" + "numberOfBeats=" + numberOfBeats + ", barLength=" + barLength + '}';
   }
 }
