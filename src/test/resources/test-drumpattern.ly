@@ -25,6 +25,18 @@
         \new Staff {
             \time 4/4
             \new Voice {
+                \relative c'' {
+                    a1
+                    a2 a2
+                    a4 a4 a4 a4
+                    a8 a8 a8 a8 a8 a8 a8 a8
+                    \break
+                    r1
+                    r2 r2
+                    r4 r4 r4 r4
+                    r8 r8 r8 r8 r8 r8 r8 r8
+                    \break
+                }
             }
         }
 

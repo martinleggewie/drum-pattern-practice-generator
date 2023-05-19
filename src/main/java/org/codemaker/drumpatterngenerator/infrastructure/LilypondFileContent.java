@@ -1,6 +1,10 @@
 package org.codemaker.drumpatterngenerator.infrastructure;
 
+import org.codemaker.drumpatterngenerator.domain.entities.Bar;
+import org.codemaker.drumpatterngenerator.domain.entities.Beat;
 import org.codemaker.drumpatterngenerator.domain.entities.DrumPattern;
+
+import static org.codemaker.drumpatterngenerator.domain.entities.Beat.Type.NOTE;
 
 public class LilypondFileContent {
   private final String title;
@@ -15,10 +19,7 @@ public class LilypondFileContent {
   }
 
   public String getContent() {
-
-    String builder = version() + "\n" + "\n" + paper() + "\n" + layout() + "\n" + maincontent() + "\n";
-
-    return builder;
+    return version() + "\n" + "\n" + paper() + "\n" + layout() + "\n" + book() + "\n";
   }
 
   private String version() {
@@ -44,14 +45,50 @@ public class LilypondFileContent {
             "}\n";
   }
 
-  private String maincontent() {
+  private String book() {
+    String timeSignatureString = drumPattern.getTimeSignature().numberOfBeats + "/" + drumPattern.getTimeSignature().barLength;
+    StringBuilder builder = new StringBuilder();
+    builder.append("\\book {\n");
+    builder.append("    \\header {\n");
+    builder.append("        title = \"" + title + "\"\n");
+    builder.append("        tagline = \"\"\n");
+    builder.append("    }\n");
+    builder.append("    \\markup \\vspace #2\n");
+    builder.append("    \\score {\n");
+    builder.append("        \\new Staff {\n");
+    builder.append("            \\time " + timeSignatureString + "\n");
+    builder.append("            \\new Voice {\n");
+    builder.append("                \\relative c'' {\n");
 
-    String builder =
-            "\\book {\n" + "    \\header {\n" + "        title = \"" + title + "\"\n" + "        tagline = \"\"\n" + "    }\n" + "    " +
-                    "\\markup \\vspace #2\n" + "    \\score {\n" + "        \\new Staff {\n" + "            \\time 4/4\n" + "            " +
-                    "\\new Voice {\n" + "            }\n" + "        }\n\n" + "        \\layout { }\n\n" + "        \\midi { }\n" + "    " +
-                    "}\n" + "}\n\n";
+    int barNumber = 0;
+    for (Bar currentBar : drumPattern.getBars()) {
+      builder.append("                    ");
+      for (int i = 0; i < currentBar.getBeats().size(); i++) {
+        Beat currentBeat = currentBar.getBeats().get(i);
+        builder.append(currentBeat.type == NOTE ? "a" : "r");
+        builder.append(currentBeat.durationDenominator);
+        if (i < currentBar.getBeats().size() - 1) {
+          builder.append(" ");
+        }
+      }
+      builder.append("\n");
+      barNumber++;
+      if (barNumber == numberOfBarsPerLine) {
+        builder.append("                    \\break\n");
+        barNumber = 0;
+      }
+    }
 
-    return builder;
+    builder.append("                }\n");
+    builder.append("            }\n");
+    builder.append("        }\n");
+    builder.append("\n");
+    builder.append("        \\layout { }\n");
+    builder.append("\n");
+    builder.append("        \\midi { }\n");
+    builder.append("    }\n");
+    builder.append("}");
+
+    return builder.toString();
   }
 }

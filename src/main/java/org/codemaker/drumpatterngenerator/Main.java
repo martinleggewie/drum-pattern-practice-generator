@@ -88,7 +88,8 @@ public class Main {
 
     System.out.println("Lilypond file created.");
     System.out.println();
-    System.out.println("Now use \"lilypond -dresolution=500 --format png " + outputFilename + "\" to create both PNG and MIDI file.");
+    System.out.println(
+            "Now use \"lilypond -dresolution=500 -dmidi-extension=mid --format png " + outputFilename + "\" to create both PNG and MIDI file.");
     System.out.println();
   }
 }
