@@ -14,9 +14,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 
 public class Main {
+
+  public static final int[] DEFAULT_DURATION_DENOMINATORS = {1, 2, 4, 8, 16, 32, 64};
+
   public static void main(String[] args) throws IOException {
 
     // 1. Set up all options
@@ -24,6 +28,9 @@ public class Main {
             .valueSeparator('=').required(false).hasArg(true).build();
     Option numberOfBarsPerLineOption = Option.builder("l").longOpt("numberOfBarsPerLine")
             .desc("number of bars which should appear in one line").valueSeparator('=').required(false).hasArg(true).build();
+    Option durationDenominatorsOption = Option.builder("d").longOpt("durationDenominators")
+            .desc("comma-separated list of all duration denominators which should be used to generate the pattern").valueSeparator('=')
+            .required(false).hasArg(true).build();
     Option titleOption = Option.builder("t").longOpt("title").desc("title to appear at the top of the generated score").valueSeparator('=')
             .required(false).hasArg(true).build();
     Option outputOption = Option.builder("o").longOpt("output")
@@ -33,6 +40,7 @@ public class Main {
     Options options = new Options();
     options.addOption(numberOfBarsOption);
     options.addOption(numberOfBarsPerLineOption);
+    options.addOption(durationDenominatorsOption);
     options.addOption(titleOption);
     options.addOption(outputOption);
     options.addOption(helpOption);
@@ -63,6 +71,21 @@ public class Main {
     String outputFilename = commandLine.getOptionValue(outputOption.getOpt());
     int numberOfBars = Integer.parseInt(commandLine.getOptionValue(numberOfBarsOption.getOpt(), "16"));
     int numberOfBarsPerLine = Integer.parseInt(commandLine.getOptionValue(numberOfBarsPerLineOption.getOpt(), "4"));
+    String durationDenominatorsString = commandLine.getOptionValue(durationDenominatorsOption.getOpt());
+    int[] durationDenominators;
+    if (durationDenominatorsString == null || durationDenominatorsString.trim().length() == 0) {
+      StringBuilder builder = new StringBuilder();
+      for (int i = 0; i < DEFAULT_DURATION_DENOMINATORS.length; i++) {
+        builder.append(DEFAULT_DURATION_DENOMINATORS[i]);
+        if (i < DEFAULT_DURATION_DENOMINATORS.length - 1) {
+          builder.append(",");
+        }
+      }
+      durationDenominatorsString = builder.toString();
+      durationDenominators = DEFAULT_DURATION_DENOMINATORS;
+    } else {
+      durationDenominators = Arrays.stream(durationDenominatorsString.split(",")).mapToInt(Integer::parseInt).toArray();
+    }
     String title = commandLine.getOptionValue(titleOption.getOpt());
     if (title == null || title.trim().length() == 0) {
       DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
@@ -74,12 +97,13 @@ public class Main {
     System.out.println("Creating the pattern using the following input information:");
     System.out.println("    number of bars in total: " + numberOfBars);
     System.out.println("    number of bars per line: " + numberOfBarsPerLine);
+    System.out.println("    duration denominators:   " + durationDenominatorsString);
     System.out.println("    title:                   " + title);
     System.out.println("    output file:             " + outputFilename);
     System.out.println();
 
-    DrumPatternGeneratorService drumPatternGeneratorService = new DrumPatternGeneratorService(numberOfBars);
-    DrumPattern drumPattern = drumPatternGeneratorService.createDrumPattern();
+    DrumPatternGeneratorService drumPatternGeneratorService = new DrumPatternGeneratorService();
+    DrumPattern drumPattern = drumPatternGeneratorService.createDrumPattern(numberOfBars, durationDenominators);
     LilypondFileContent lilypondFileContent = new LilypondFileContent(drumPattern, title, numberOfBarsPerLine);
 
     FileWriter fileWriter = new FileWriter(outputFilename, false);
@@ -89,7 +113,8 @@ public class Main {
     System.out.println("Lilypond file created.");
     System.out.println();
     System.out.println(
-            "Now use \"lilypond -dresolution=500 -dmidi-extension=mid --format png " + outputFilename + "\" to create both PNG and MIDI file.");
+            "Now use \"lilypond -dresolution=500 -dmidi-extension=mid --format png " + outputFilename + "\" to create both PNG and MIDI " +
+                    "file.");
     System.out.println();
   }
 }
